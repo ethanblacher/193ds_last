@@ -52,19 +52,20 @@ salamanders <- read_csv(here("data", "salamanders.csv"))
 ## histogram of counts:
 
 ```{r histogram}
-
+ggplot(data= salamanders, aes(x=count))+
+  geom_histogram(bins=17)
 ```
 
 ## Missingness:
 
 ```{r missingness}
-
+gg_miss_var(salamanders)
 ```
 
 ## Skim: 
 
 ```{r skim-dataset}
-
+skim(salamanders)
 ```
 
 ## Pairs plot:  
@@ -74,8 +75,10 @@ salamanders <- read_csv(here("data", "salamanders.csv"))
 #| fig.height: 12
 #| out.width: 90%
 #| fig.align: center
-
-
+salamanders %>%
+  #take out site
+  select(!site)%>%
+ggpairs()
 ```
 
 # Question: How does salamander count vary with mined status, species, and stream cover?
@@ -84,13 +87,13 @@ salamanders <- read_csv(here("data", "salamanders.csv"))
 
 ```{r models}
 # linear model, we know this is wrong
-
+salmod1 <- lm(count~cover+mined+spp, data = salamanders)
 
 # generalized linear model with Poisson distribution
-
+salmod2 <- glm(count~cover+mined+spp, data = salamanders, family="poisson")
 
 # generalized linear model with negative binomial distribution
-
+salmod3 <- glm.nb(count~cover+mined+spp, data = salamanders)
 
 # generalized linear model with Poisson distribution and random effect of site
 
@@ -107,34 +110,40 @@ salamanders <- read_csv(here("data", "salamanders.csv"))
 #| fig.align: center
 
 # check diagnostics
-
+simulateResiduals(salmod1, plot=TRUE)
+simulateResiduals(salmod2, plot =TRUE)
+simulateResiduals(salmod3, plot =TRUE)
 ```
 
 ## Which distribution to use?
 
 ```{r choosing-model}
-
+model.sel(salmod1,salmod2, salmod3)
 ```
 
 ## Model summary
 
 ```{r summaries}
 # model object
-
+salmod3
 
 # summary 
-
+summary(salmod3)
 
 # confidence intervals
-
+confint(salmod3)
 
 # adjusted R2
-
+r.squaredGLMM(salmod3)
 ```
 
 ```{r}
 # model object in table
-
+salmod3%>%
+  as_flextable()
+#alternative to above ^
+tidy(salmod3)%>%
+flextable()
 ```
 
 
@@ -146,6 +155,6 @@ salamanders <- read_csv(here("data", "salamanders.csv"))
 #| out.width: 90%
 #| fig.align: center
 
-
+plot(ggpredict(salmod3, terms=c("cover", "mined")), add.data = TRUE)
 ```
 
