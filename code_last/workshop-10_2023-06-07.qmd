@@ -156,5 +156,7 @@ flextable()
 #| fig.align: center
 
 plot(ggpredict(salmod3, terms=c("cover", "mined")), add.data = TRUE)
+
+plot(ggpredict(salmod3, terms = c("cover", "mined", "spp")), add.data=TRUE)
 ```
 
